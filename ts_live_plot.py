@@ -214,7 +214,8 @@ def update(_frame=None):
             pad = max(hi - lo, 1.0) * 0.15
             axes[i].set_ylim(lo - pad, hi + pad)
     mode = f"filtered 1-35 Hz, {args.mains:g} Hz notch" if show_filtered[0] else "raw, drift removed"
-    title.set_text(f"{st['label']} | {received / FS:.0f} s | lost samples: {lost} | "
+    title.set_text(f"{st['label']} | last {n / FS:.0f} s of {received / FS:.0f} s received | "
+                   f"lost samples: {lost} | "
                    f"gain x{'/'.join(f'{g:g}' for g in sorted(set(st['gains'])))} | {mode}" + ("" if st["connected"] else " | DISCONNECTED"))
 
 

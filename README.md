@@ -4,7 +4,11 @@
 [Traumschreiber](https://github.com/sd20-org/traumschreiber) over Bluetooth and shows all eight
 EEG channels live on your computer. No app and no phone needed.**
 
-![All eight channels of a Traumschreiber without electrodes, filtered 1–35 Hz with a 50 Hz notch](images/live_plot.png)
+![EEG on channel 2, the other channels without electrodes, same scale of ±20 µV](images/live_plot.png)
+
+*Traumschreiber on the forehead with electrodes on channel 2 only; the other seven inputs are
+open. Same axis of ±20 µV on all channels, so the EEG stands out from the empty inputs.
+Recorded with `python ts_live_plot.py --filter --window 10 --ylim 20`.*
 
 Use it for a quick signal check after putting the electrodes on, for testing the device with a
 function generator, or as the starting point for your own experiments in Python. The whole
@@ -13,7 +17,7 @@ script is about 200 lines.
 | What you see | |
 |---|---|
 | One plot per channel | in microvolts, the last 5 seconds (adjustable), updated four times per second |
-| Title line | device name, seconds received, samples lost on the radio link, amplifier gain, filter state |
+| Title line | device name, seconds shown and received in total, samples lost on the radio link, amplifier gain, filter state |
 | Key **f** | switches the display filter on and off: 1–35 Hz band-pass and a notch at the mains frequency (display only) |
 | No SD card needed | streaming works with or without a card in the device |
 
