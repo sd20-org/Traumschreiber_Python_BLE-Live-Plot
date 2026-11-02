@@ -1,0 +1,4 @@
+bleak>=0.22
+numpy
+scipy
+matplotlib
