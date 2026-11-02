@@ -4,7 +4,7 @@
 [Traumschreiber](https://github.com/sd20-org/traumschreiber) over Bluetooth and shows all eight
 EEG channels live on your computer. No app and no phone needed.**
 
-![All eight channels of a Traumschreiber without electrodes, filtered 1–35 Hz](images/live_plot.png)
+![All eight channels of a Traumschreiber without electrodes, filtered 1–35 Hz with a 50 Hz notch](images/live_plot.png)
 
 Use it for a quick signal check after putting the electrodes on, for testing the device with a
 function generator, or as the starting point for your own experiments in Python. The whole
@@ -14,7 +14,7 @@ script is about 200 lines.
 |---|---|
 | One plot per channel | in microvolts, the last 5 seconds (adjustable), updated four times per second |
 | Title line | device name, seconds received, samples lost on the radio link, amplifier gain, filter state |
-| Key **f** | switches a 1–35 Hz band-pass on and off (for the display only) |
+| Key **f** | switches the display filter on and off: 1–35 Hz band-pass and a notch at the mains frequency (display only) |
 | No SD card needed | streaming works with or without a card in the device |
 
 > The Traumschreiber is **not a medical device**, and neither is this script. It is meant for
@@ -54,7 +54,8 @@ opens the plot window. Close the window or press Ctrl+C to stop; the device then
 |---|---|
 | `python ts_live_plot.py` | connect to the nearest Traumschreiber |
 | `python ts_live_plot.py --addr AA:BB:CC:DD:EE:FF` | connect to one particular device (the search lists the addresses it finds) |
-| `python ts_live_plot.py --filter` | start with the 1–35 Hz filter on |
+| `python ts_live_plot.py --filter` | start with the display filter on |
+| `python ts_live_plot.py --mains 60` | notch at 60 Hz instead of 50 Hz (Americas, parts of Asia) |
 | `python ts_live_plot.py --ylim 50` | fixed axis of ±50 µV instead of automatic scaling |
 | `python ts_live_plot.py --window 10` | show the last 10 seconds |
 | `python ts_live_plot.py --snapshot 20` | no window: record 20 s, save `ts_live_plot.png`, exit |
@@ -67,6 +68,7 @@ opens the plot window. Close the window or press Ctrl+C to stop; the device then
 | "No Traumschreiber found" | Switch the device on and keep it close. It connects to one device at a time: close the sd20 app or any other app that may be connected to it. |
 | Found, but connecting fails on Linux ("failed to discover services") | Linux may keep a stale entry for the device. Remove it with `bluetoothctl remove AA:BB:CC:DD:EE:FF` (the address the search prints) and start the script again. |
 | A channel is a flat line or jumps wildly | That input has no electrode or bad contact. Unused inputs float and show large slow swings. |
+| A channel shows a fast, even oscillation | Mains hum (50 or 60 Hz), typical for an open input or a loose electrode. Press **f**: the notch removes it from the display. If it stays, check `--mains`. |
 | Many lost samples | Move the computer closer; walls and bodies weaken Bluetooth. Lost samples are still on the device's SD card. |
 
 ## How it works

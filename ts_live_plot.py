@@ -9,7 +9,7 @@ Connects to a Traumschreiber, starts streaming and plots every channel the devic
     python ts_live_plot.py --filter             # band-pass 1-35 Hz for display
     python ts_live_plot.py --snapshot 20        # no window: record 20 s, save a PNG, exit
 
-Press "f" in the window to switch the display filter on and off.
+Press "f" in the window to switch the display filter (1-35 Hz, 50 Hz notch) on and off.
 """
 import argparse
 import asyncio
@@ -37,7 +37,9 @@ ap.add_argument("--gain", type=float, default=0.0,
                 help="amplifier gain; default: read from the device (firmware 0.0.91+), else 4")
 ap.add_argument("--window", type=float, default=5.0, help="seconds shown (default 5)")
 ap.add_argument("--ylim", type=float, default=0.0, help="fixed y axis +-N uV; 0 = automatic (default)")
-ap.add_argument("--filter", action="store_true", help="start with the 1-35 Hz display filter on")
+ap.add_argument("--filter", action="store_true",
+                help="start with the display filter on (1-35 Hz band-pass and mains notch)")
+ap.add_argument("--mains", type=float, default=50.0, help="mains frequency for the notch: 50 or 60 (default 50)")
 ap.add_argument("--snapshot", type=float, help="record this many seconds, save --out and exit")
 ap.add_argument("--out", default="ts_live_plot.png", help="file name for --snapshot")
 args = ap.parse_args()
@@ -158,7 +160,11 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
 nch, chans = st["nch"], st["chans"]
-SOS = signal.butter(4, [1.0, 35.0], btype="bandpass", fs=FS, output="sos")
+# Display filter: notch at the mains frequency, then band-pass 1-35 Hz. The band-pass
+# alone damps 50 Hz by only about 16 dB, far too little for an open input that picks
+# up mains hum of several millivolts.
+SOS = np.vstack([signal.tf2sos(*signal.iirnotch(args.mains, 30.0, fs=FS)),
+                 signal.butter(4, [1.0, 35.0], btype="bandpass", fs=FS, output="sos")])
 show_filtered = [args.filter]
 
 fig, axes = plt.subplots(nch, 1, figsize=(12, 1.2 * nch + 1), sharex=True, squeeze=False)
@@ -207,7 +213,7 @@ def update(_frame=None):
             lo, hi = np.percentile(y, [0.5, 99.5])
             pad = max(hi - lo, 1.0) * 0.15
             axes[i].set_ylim(lo - pad, hi + pad)
-    mode = "filtered 1-35 Hz" if show_filtered[0] else "raw, drift removed"
+    mode = f"filtered 1-35 Hz, {args.mains:g} Hz notch" if show_filtered[0] else "raw, drift removed"
     title.set_text(f"{st['label']} | {received / FS:.0f} s | lost samples: {lost} | "
                    f"gain x{'/'.join(f'{g:g}' for g in sorted(set(st['gains'])))} | {mode}" + ("" if st["connected"] else " | DISCONNECTED"))
 
